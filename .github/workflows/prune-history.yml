@@ -1,0 +1,38 @@
+name: Prune Git History
+
+on:
+  schedule:
+    - cron: "0 0 1 * *"   # Run on the 1st of every month at 00:00 UTC
+  workflow_dispatch:      # Allow manual run
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout full history
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Configure Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+    - name: Trim history to last 30 commits
+      run: |
+        # Get the latest 30 commits
+        COMMITS=$(git rev-list --max-count=30 HEAD | tail -n 1)
+
+        # Reset the branch to that commit (soft reset preserves working tree)
+        git reset --soft $COMMITS
+
+        # Create a fresh root commit containing current tree
+        git commit -m "Pruned history to last 30 commits on $(date +'%Y-%m-%d')"
+
+    - name: Force push rewritten history
+      run: |
+        git push origin HEAD --force
