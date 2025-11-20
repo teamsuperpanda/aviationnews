@@ -15,6 +15,11 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Configure Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
     - name: Trim history to last 30 commits
       run: |
         # Get the latest 30 commits
